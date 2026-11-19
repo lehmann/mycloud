@@ -7,11 +7,20 @@
     label { display: block; margin-top: 8px; font-weight: 600; }
     input, select, button { width: 100%; box-sizing: border-box; margin-top: 4px; padding: 6px; }
     button { background: #0b66e4; color: #fff; border: 0; border-radius: 4px; cursor: pointer; }
-    #status { margin-top: 10px; word-break: break-all; }
+    button.secondary { background: #eef3fb; color: #0b66e4; border: 1px solid #0b66e4; }
+    #tabBox { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+    #tabName { word-break: break-all; color: #555; }
+    #status { margin-top: 10px; word-break: break-all; white-space: pre-line; }
+    #qr { display: block; margin: 10px auto 0; width: 180px; height: 180px; image-rendering: pixelated; }
     details { margin-top: 10px; }
   </style>
 </head>
 <body>
+  <div id="tabBox" hidden>
+    <div id="tabName"></div>
+    <button id="shareTab" class="secondary">Compartilhar a aba atual</button>
+  </div>
+
   <label for="file">Arquivo</label>
   <input type="file" id="file">
   <label for="ttl">Expira em</label>
@@ -22,6 +31,7 @@
   </select>
   <button id="send">Compartilhar</button>
   <div id="status"></div>
+  <img id="qr" alt="QR code da URL compartilhada" hidden>
 
   <details id="settings">
     <summary>Configurações</summary>
@@ -31,6 +41,7 @@
     <input id="token" type="password">
     <button id="save">Salvar</button>
   </details>
+  <script src="vendor/qrcode.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

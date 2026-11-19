@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "MyCloud Share",
+  "version": "0.1.0",
+  "description": "Compartilhe arquivos entre navegadores via URL.",
+  "action": { "default_popup": "popup.html" },
+  "permissions": ["storage", "clipboardWrite"]
+}

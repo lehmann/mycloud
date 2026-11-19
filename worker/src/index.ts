@@ -108,7 +108,7 @@ async function raw(env: Env, id: string): Promise<Response> {
   return new Response(obj.body, { headers });
 }
 
-async function viewer(env: Env, id: string): Promise<Response> {
+async function viewer(env: Env, id: string, origin: string): Promise<Response> {
   const head = await getLive(env, id);
   if (!head) return new Response("Arquivo não encontrado ou expirado", { status: 404 });
 
@@ -116,13 +116,15 @@ async function viewer(env: Env, id: string): Promise<Response> {
   const type = head.httpMetadata?.contentType ?? "application/octet-stream";
   const kind = detectKind(name, type);
   const rawUrl = `/f/${id}`;
+
+  // PDFs: o visualizador nativo do navegador (inclusive Chrome Android) só funciona
+  // com o PDF aberto como documento, não dentro de <iframe>.
+  if (kind === "pdf") return Response.redirect(`${origin}${rawUrl}`, 302);
   const dl = `<a class="btn" href="${rawUrl}" download="${escapeHtml(name)}">Baixar</a>`;
 
   let body: string;
   if (kind === "image") {
     body = `<img src="${rawUrl}" alt="${escapeHtml(name)}">`;
-  } else if (kind === "pdf") {
-    body = `<iframe src="${rawUrl}" title="${escapeHtml(name)}"></iframe>`;
   } else if (kind === "text") {
     const obj = await env.BUCKET.get(id, { range: { offset: 0, length: PREVIEW_LIMIT } });
     const text = obj ? await obj.text() : "";
@@ -154,12 +156,12 @@ pre{white-space:pre-wrap;word-break:break-word;background:#fff;padding:16px;bord
 
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
-    const { pathname } = new URL(req.url);
+    const { pathname, origin } = new URL(req.url);
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (req.method === "POST" && pathname === "/upload") return upload(req, env);
     if (req.method === "GET") {
       const m = pathname.match(/^\/([fv])\/([^/]+)$/);
-      if (m) return m[1] === "f" ? raw(env, m[2]) : viewer(env, m[2]);
+      if (m) return m[1] === "f" ? raw(env, m[2]) : viewer(env, m[2], origin);
     }
     return new Response("Not found", { status: 404 });
   },
